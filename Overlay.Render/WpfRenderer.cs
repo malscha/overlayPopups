@@ -12,6 +12,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Windows.Media.Animation;
 
 namespace Overlay.Render
 {
@@ -60,8 +61,12 @@ namespace Overlay.Render
 
         private void RenderTextCard(Card card, Canvas canvas)
         {
-            // Create a grid to hold our text with optional background
-            var grid = new Grid();
+            // Create a canvas to hold our text with optional background
+            var textCanvas = new Canvas
+            {
+                Width = card.Width,
+                Height = card.Height
+            };
 
             // Create a rectangle for the background if specified
             if (!string.IsNullOrEmpty(card.BackgroundColor))
@@ -71,9 +76,11 @@ namespace Overlay.Render
                     var background = new Rectangle
                     {
                         Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(card.BackgroundColor)),
-                        Opacity = card.Opacity
+                        Opacity = card.Opacity,
+                        Width = card.Width,
+                        Height = card.Height
                     };
-                    grid.Children.Add(background);
+                    textCanvas.Children.Add(background);
                 }
                 catch
                 {
@@ -81,20 +88,79 @@ namespace Overlay.Render
                 }
             }
 
+            // Determine font size based on text size option
+            double fontSize = card.TextSize switch
+            {
+                TextSize.Small => 48,
+                TextSize.Large => 96,
+                _ => 72 // Medium
+            };
+
             // Create the text block
             var textBlock = new TextBlock
             {
                 Text = card.Text ?? string.Empty,
-                FontFamily = new FontFamily(card.Font?.Family ?? "Arial"),
-                FontSize = card.Font?.Size ?? 72,
+                FontFamily = new FontFamily(card.Font?.Family ?? "Impact"), // Changed to Impact as default
+                FontSize = card.Font?.Size ?? fontSize,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(card.ForegroundColor ?? "#FFFFFF")),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(card.ForegroundColor ?? "#FF69B4")), // Pink as default
                 TextAlignment = ConvertTextAlignment(card.TextAlignment),
-                TextWrapping = TextWrapping.NoWrap
+                TextWrapping = TextWrapping.NoWrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
             };
 
+            // Center the text within the canvas
+            textBlock.Measure(new Size(card.Width, card.Height));
+            textBlock.Arrange(new Rect(0, 0, card.Width, card.Height));
+            
+            // Set position to center the text block within the canvas
+            Canvas.SetLeft(textBlock, (card.Width - textBlock.ActualWidth) / 2);
+            Canvas.SetTop(textBlock, (card.Height - textBlock.ActualHeight) / 2);
+
+            // Add outline effect if specified
+            if (card.HasOutline)
+            {
+                // Determine contrasting color (black or white)
+                var primaryColor = (Color)ColorConverter.ConvertFromString(card.ForegroundColor ?? "#FF69B4");
+                var contrastingColor = IsColorLight(primaryColor) ? Colors.Black : Colors.White;
+                
+                // For outline effect, we'll create multiple text blocks slightly offset
+                // Create 8 points around the text for a thicker outline
+                for (int i = 0; i < 8; i++)
+                {
+                    var outlineTextBlock = new TextBlock
+                    {
+                        Text = card.Text ?? string.Empty,
+                        FontFamily = new FontFamily(card.Font?.Family ?? "Impact"),
+                        FontSize = card.Font?.Size ?? fontSize,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(contrastingColor),
+                        TextAlignment = ConvertTextAlignment(card.TextAlignment),
+                        TextWrapping = TextWrapping.NoWrap,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    // Position the outline text blocks around the main text in a circle
+                    double angle = (i * 45) * Math.PI / 180; // 8 points, 45 degrees apart
+                    double offsetX = Math.Cos(angle) * 3; // 3 pixels offset for thicker outline
+                    double offsetY = Math.Sin(angle) * 3;
+
+                    // Center the outline text block and apply offset
+                    outlineTextBlock.Measure(new Size(card.Width, card.Height));
+                    outlineTextBlock.Arrange(new Rect(0, 0, card.Width, card.Height));
+                    
+                    Canvas.SetLeft(outlineTextBlock, (card.Width - outlineTextBlock.ActualWidth) / 2 + offsetX);
+                    Canvas.SetTop(outlineTextBlock, (card.Height - outlineTextBlock.ActualHeight) / 2 + offsetY);
+
+                    textCanvas.Children.Add(outlineTextBlock);
+                }
+            }
+
+            // Create effects collection for multiple effects
+            var effects = new List<Effect>();
+            
             // Add drop shadow effect if specified
             if (!string.IsNullOrEmpty(card.DropShadowColor))
             {
@@ -106,7 +172,7 @@ namespace Overlay.Render
                     BlurRadius = 15,
                     Opacity = 1.0
                 };
-                textBlock.Effect = effect;
+                effects.Add(effect);
             }
             else
             {
@@ -119,22 +185,57 @@ namespace Overlay.Render
                     BlurRadius = 15,
                     Opacity = 1.0
                 };
-                textBlock.Effect = effect;
+                effects.Add(effect);
             }
 
-            // Add text to grid
-            grid.Children.Add(textBlock);
+            // Add glow effect if specified (or if it's the default)
+            if (card.HasGlow)
+            {
+                var glowEffect = new DropShadowEffect
+                {
+                    Color = (Color)ColorConverter.ConvertFromString(card.ForegroundColor ?? "#FF69B4"),
+                    Direction = 0,
+                    ShadowDepth = 0,
+                    BlurRadius = 25,
+                    Opacity = 0.7
+                };
+                effects.Add(glowEffect);
+            }
+
+            // Apply effects (combine if multiple)
+            if (effects.Count == 1)
+            {
+                textBlock.Effect = effects[0];
+            }
+            else if (effects.Count > 1)
+            {
+                // For multiple effects, we'll need to use a different approach
+                // In WPF, we can't directly combine effects, so we'll prioritize glow over drop shadow
+                textBlock.Effect = effects.FirstOrDefault(e => e is DropShadowEffect && 
+                    ((DropShadowEffect)e).BlurRadius > 15) ?? effects[0];
+            }
+
+            // Add text to canvas (main text block added last so it's on top)
+            textCanvas.Children.Add(textBlock);
 
             // Set position and size
-            Canvas.SetLeft(grid, card.X);
-            Canvas.SetTop(grid, card.Y);
-            Canvas.SetZIndex(grid, card.ZIndex);
+            Canvas.SetLeft(textCanvas, card.X);
+            Canvas.SetTop(textCanvas, card.Y);
+            Canvas.SetZIndex(textCanvas, card.ZIndex);
 
-            // Set the grid size
-            grid.Width = card.Width;
-            grid.Height = card.Height;
+            canvas.Children.Add(textCanvas);
 
-            canvas.Children.Add(grid);
+            // Handle zoom animation if enabled
+            if (card.UseZoomAnimation)
+            {
+                ApplyZoomAnimation(textCanvas);
+            }
+
+            // Handle pulsating effect if enabled
+            if (card.IsPulsating)
+            {
+                ApplyPulsatingEffect(textBlock, card);
+            }
 
             // Handle strobing effect if enabled
             if (card.IsStrobing)
@@ -266,6 +367,133 @@ namespace Overlay.Render
                 Overlay.Core.TextAlignment.Right => System.Windows.TextAlignment.Right,
                 _ => System.Windows.TextAlignment.Left
             };
+        }
+
+        private bool IsColorLight(Color color)
+        {
+            // Calculate luminance using the formula: (0.299*R + 0.587*G + 0.114*B) / 255
+            double luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255;
+            return luminance > 0.5;
+        }
+
+        private void ApplyZoomAnimation(Canvas targetCanvas)
+        {
+            // Create a scale transform for the zoom effect
+            var scaleTransform = new ScaleTransform(0.1, 0.1); // Start at 10% size
+            targetCanvas.RenderTransform = scaleTransform;
+            targetCanvas.RenderTransformOrigin = new Point(0.5, 0.5); // Scale from center
+
+            // Create animation for scaling
+            var scaleXAnimation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.1,
+                To = 1.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(500)), // 500ms zoom
+                EasingFunction = new System.Windows.Media.Animation.CubicEase()
+            };
+
+            var scaleYAnimation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.1,
+                To = 1.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+                EasingFunction = new System.Windows.Media.Animation.CubicEase()
+            };
+
+            // Start the animation
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+        }
+
+        private void ApplyPulsatingEffect(TextBlock textBlock, Card card)
+        {
+            // Get the pulse speed (default to medium if not specified)
+            double speed = card.PulseSpeed?.ToLower() switch
+            {
+                "fast" => 0.5,    // 0.5 seconds per cycle
+                "slow" => 2.0,    // 2 seconds per cycle
+                _ => 1.0          // 1 second per cycle (medium)
+            };
+
+            // Create a scale transform for the pulsating size effect
+            var scaleTransform = new ScaleTransform(1.0, 1.0);
+            textBlock.RenderTransform = scaleTransform;
+            textBlock.RenderTransformOrigin = new Point(0.5, 0.5);
+
+            // Create storyboard for pulsating animation
+            var storyboard = new Storyboard();
+
+            // Scale X animation
+            var scaleXAnimation = new System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames();
+            scaleXAnimation.Duration = new Duration(TimeSpan.FromSeconds(speed));
+            scaleXAnimation.RepeatBehavior = RepeatBehavior.Forever;
+
+            // Scale Y animation
+            var scaleYAnimation = new System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames();
+            scaleYAnimation.Duration = new Duration(TimeSpan.FromSeconds(speed));
+            scaleYAnimation.RepeatBehavior = RepeatBehavior.Forever;
+
+            // Glow effect animation (if glow is enabled)
+            DropShadowEffect? glowEffect = null;
+            System.Windows.Media.Animation.DoubleAnimation? glowAnimation = null;
+
+            if (card.HasGlow)
+            {
+                // Get or create glow effect
+                glowEffect = textBlock.Effect as DropShadowEffect ?? new DropShadowEffect
+                {
+                    Color = (Color)ColorConverter.ConvertFromString(card.ForegroundColor ?? "#FFFFFF"),
+                    Direction = 0,
+                    ShadowDepth = 0,
+                    BlurRadius = 25,
+                    Opacity = 0.7
+                };
+
+                if (textBlock.Effect == null)
+                    textBlock.Effect = glowEffect;
+
+                // Create glow animation
+                glowAnimation = new System.Windows.Media.Animation.DoubleAnimation
+                {
+                    From = 0.3,
+                    To = 1.0,
+                    Duration = new Duration(TimeSpan.FromSeconds(speed)),
+                    AutoReverse = true,
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+            }
+
+            // Add keyframes for smooth sine wave pulsing
+            for (int i = 0; i <= 10; i++)
+            {
+                double progress = (double)i / 10;
+                double sineValue = Math.Sin(progress * 2 * Math.PI - Math.PI / 2); // Start at minimum
+                double scale = 1.0 + (sineValue * 0.2); // Scale between 0.8 and 1.2
+
+                var keyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(progress * speed));
+
+                scaleXAnimation.KeyFrames.Add(new System.Windows.Media.Animation.LinearDoubleKeyFrame(scale, keyTime));
+                scaleYAnimation.KeyFrames.Add(new System.Windows.Media.Animation.LinearDoubleKeyFrame(scale, keyTime));
+            }
+
+            // Set up storyboard
+            Storyboard.SetTarget(scaleXAnimation, scaleTransform);
+            Storyboard.SetTargetProperty(scaleXAnimation, new PropertyPath(ScaleTransform.ScaleXProperty));
+
+            Storyboard.SetTarget(scaleYAnimation, scaleTransform);
+            Storyboard.SetTargetProperty(scaleYAnimation, new PropertyPath(ScaleTransform.ScaleYProperty));
+
+            storyboard.Children.Add(scaleXAnimation);
+            storyboard.Children.Add(scaleYAnimation);
+
+            // Start the animations
+            storyboard.Begin();
+
+            // Start glow animation if applicable
+            if (glowAnimation != null && glowEffect != null)
+            {
+                glowEffect.BeginAnimation(DropShadowEffect.OpacityProperty, glowAnimation);
+            }
         }
     }
 }

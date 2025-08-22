@@ -53,14 +53,16 @@ namespace Overlay.Cli
                 Texts = new string[] { "Overlay Text" },
                 Duration = 10,
                 SwitchInterval = 2,
-                ForegroundColor = "#FFFFFF",
+                ForegroundColor = "#FF69B4", // Pink color as default
                 DropShadowColor = "#000000",
                 IsStrobing = false,
                 DisplayIndex = 0,
                 Column = -1,
                 Row = -1,
                 Columns = 3,
-                Rows = 3
+                Rows = 3,
+                HasGlow = true, // Default to true
+                TextSize = TextSize.Medium // Default to medium
             };
             
             for (int i = 0; i < args.Length; i++)
@@ -128,6 +130,36 @@ namespace Overlay.Cli
                         if (i + 1 < args.Length && int.TryParse(args[i + 1], out int rows))
                             options.Rows = rows;
                         break;
+                    case "-outline":
+                        options.HasOutline = true;
+                        break;
+                    case "-glow":
+                        options.HasGlow = true;
+                        break;
+                    case "-zoom":
+                        options.UseZoomAnimation = true;
+                        break;
+                    case "-pulse":
+                        options.IsPulsating = true;
+                        if (i + 1 < args.Length)
+                        {
+                            string speed = args[i + 1].ToLower();
+                            if (speed == "fast" || speed == "medium" || speed == "slow")
+                                options.PulseSpeed = speed;
+                        }
+                        break;
+                    case "-size":
+                        if (i + 1 < args.Length)
+                        {
+                            string size = args[i + 1].ToLower();
+                            options.TextSize = size switch
+                            {
+                                "small" => TextSize.Small,
+                                "large" => TextSize.Large,
+                                _ => TextSize.Medium
+                            };
+                        }
+                        break;
                 }
             }
             
@@ -151,6 +183,14 @@ namespace Overlay.Cli
         public int Row { get; set; } = -1;    // -1 means not set
         public int Columns { get; set; } = 3; // Default columns
         public int Rows { get; set; } = 3;    // Default rows
+        
+        // New options for text effects
+        public bool HasOutline { get; set; } = false;
+        public bool HasGlow { get; set; } = true; // Default to true
+        public bool UseZoomAnimation { get; set; } = false;
+        public bool IsPulsating { get; set; } = false;
+        public string? PulseSpeed { get; set; } // "fast", "medium", "slow"
+        public TextSize TextSize { get; set; } = TextSize.Medium; // Default to medium
     }
     
     class OverlayApplication
@@ -239,7 +279,13 @@ namespace Overlay.Cli
                 DropShadowColor = options.DropShadowColor,
                 TextAlignment = Overlay.Core.TextAlignment.Center,
                 IsStrobing = options.IsStrobing,
-                DisplayIndex = options.DisplayIndex
+                DisplayIndex = options.DisplayIndex,
+                HasOutline = options.HasOutline,
+                HasGlow = options.HasGlow,
+                UseZoomAnimation = options.UseZoomAnimation,
+                IsPulsating = options.IsPulsating,
+                PulseSpeed = options.PulseSpeed,
+                TextSize = options.TextSize
             };
             
             _renderer.RenderCard(_currentCard, _canvas);

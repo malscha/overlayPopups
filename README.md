@@ -12,10 +12,18 @@ A powerful, scriptable overlay tool for Windows that displays customizable text 
   - Custom text and drop shadow colors
   - Strobing effects for dynamic text
   - Transparent backgrounds
+  - Impact font as default
+  - Contrasting outline (black or white)
+  - Toggleable glow effect
+  - Zoom animation
+  - Pulsating text (size and glow variation)
 - **Display Options**:
   - Absolute positioning (X, Y coordinates)
   - Grid positioning (column, row)
   - Center positioning
+- **Text Customization**:
+  - Three sizes: small, medium (default), large
+  - Default pink/purple color with glow effect
 - **Automatic Timing**: Overlays automatically disappear after specified duration
 
 ## Documentation
@@ -55,9 +63,9 @@ dotnet run --project Overlay.Cli -- [options]
 
 ### Quick Examples
 
-1. **Display simple text centered on primary display for 5 seconds:**
+1. **Display simple text centered on primary display for 5 seconds (using defaults):**
    ```bash
-   dotnet run --project Overlay.Cli -- -text "Hello World" -duration 5 -center
+   dotnet run --project Overlay.Cli -- -text "Hello World" -duration 5
    ```
 
 2. **Display strobing purple text with pink drop shadow in top-left corner:**
@@ -116,10 +124,21 @@ You can position overlays using three different methods:
    -switch 2           # Switch every 2 seconds
    ```
 
+3. **Text Size:**
+   ```bash
+   -size small         # Small text
+   -size medium        # Medium text (default)
+   -size large         # Large text
+   ```
+
 ### Visual Customization
 
-- **Text Color:** `-foreground "#RRGGBB"` (default: white)
+- **Text Color:** `-foreground "#RRGGBB"` (default: #FF69B4 - pink/purple)
 - **Drop Shadow Color:** `-dropshadow "#RRGGBB"` (default: black)
+- **Outline Effect:** `-outline` (adds black or white outline depending on text color)
+- **Glow Effect:** `-glow` (adds a subtle glow around text, enabled by default)
+- **Zoom Animation:** `-zoom` (text grows from center to full size)
+- **Pulsating Effect:** `-pulse [fast|medium|slow]` (text pulses in size and glow)
 - **Strobing Effect:** `-strobing`
 - **Display Selection:** `-display N` (0-based index)
 

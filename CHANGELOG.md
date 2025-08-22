@@ -8,17 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project structure
-- Core overlay functionality
-- CLI interface with comprehensive options
-- Multi-monitor support
-- Grid positioning system
-- Text rotation feature
-- Strobing visual effects
-- Customizable colors and drop shadows
-- Automatic timing and cleanup
+- Impact font as default text font
+- Text outline effect with automatic contrasting color (black or white)
+- Toggleable glow effect (enabled by default)
+- Zoom animation where text grows from center to full size
+- Pulsating text effect with size and glow variation (-pulse fast|medium|slow)
+- Text size options: small (48pt), medium (72pt), large (96pt)
+- Default settings: pink/purple text (#FF69B4), glow enabled, medium size, centered on primary display
+- New CLI option: -size small|medium|large for text sizing
+- Standalone executable build scripts
 
 ### Changed
+- Improved text alignment to properly center both horizontally and vertically
+- Enhanced outline effect with thicker 8-point outline instead of 4-point
 - Refined grid coordinate system (0,0 = top-left)
 - Improved display detection and positioning
 - Enhanced argument parsing for CLI
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text clipping issues
 - Display positioning accuracy
 - Timer management for text rotation
+- Horizontal text alignment in canvas containers
 
 ## [1.0.0] - 2025-08-22
 

@@ -44,9 +44,32 @@ public class Card
     public string ForegroundColor { get; set; }
     public string DropShadowColor { get; set; }
     public bool IsStrobing { get; set; }
+    // New properties for text effects
+    public bool HasOutline { get; set; }        // Adds outline effect
+    public bool HasGlow { get; set; }           // Adds glow effect (default: true)
+    public bool UseZoomAnimation { get; set; }  // Enables zoom animation
+    public bool IsPulsating { get; set; }       // Enables pulsating effect
+    public string? PulseSpeed { get; set; }     // "fast", "medium", "slow"
+    public TextSize TextSize { get; set; }      // Small, Medium (default), Large
     // ... other properties
 }
 ```
+
+### Text Size Options
+
+The application now supports three text sizes:
+- **Small**: 48pt font
+- **Medium**: 72pt font (default)
+- **Large**: 96pt font
+
+### Default Values
+
+The application now has the following default values for a better out-of-the-box experience:
+- **Font**: Impact (meme-style font)
+- **Text Color**: #FF69B4 (pink/purple)
+- **Glow Effect**: Enabled by default
+- **Text Size**: Medium
+- **Position**: Center of primary display when no position is specified
 
 ### Renderer Interface
 

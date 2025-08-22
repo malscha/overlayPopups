@@ -28,6 +28,14 @@ namespace Overlay.Core
         public bool IsStrobing { get; set; } = false;
         public string? DropShadowColor { get; set; }
         public int DisplayIndex { get; set; } = 0; // 0 = primary, 1 = secondary, etc.
+        
+        // New properties for text effects
+        public bool HasOutline { get; set; } = false;
+        public bool HasGlow { get; set; } = true; // Default to true
+        public bool UseZoomAnimation { get; set; } = false;
+        public bool IsPulsating { get; set; } = false;
+        public string? PulseSpeed { get; set; } // "fast", "medium", "slow"
+        public TextSize TextSize { get; set; } = TextSize.Medium; // Default to medium
     }
 
     public enum CardType
@@ -45,9 +53,16 @@ namespace Overlay.Core
 
     public class FontInfo
     {
-        public string Family { get; set; } = "Arial";
-        public double Size { get; set; } = 12;
+        public string Family { get; set; } = "Impact";
+        public double Size { get; set; } = 72; // Default to medium size
         public string Weight { get; set; } = "Normal"; // Normal, Bold, etc.
         public string Style { get; set; } = "Normal"; // Normal, Italic, etc.
+    }
+
+    public enum TextSize
+    {
+        Small,
+        Medium,
+        Large
     }
 }
