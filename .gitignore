@@ -1,0 +1,124 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio 2015+ cache/options
+.vs/
+*.vs/
+
+# Rider
+.idea/
+*.sln.iml
+
+# TeX/LaTeX
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fls
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nav
+*.nlo
+*.out
+*.pdf
+*.pdfsync
+*.run.xml
+*.synctex.gz
+*.toc
+*.vrb
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# TeamCity
+_TeamCity*
+
+# DotCover
+*.dotCover
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# MightyMoose
+*.mm.*
+AutoTest.Net/
+
+# Web workbench (sass)
+.sass-cache/
+
+# Installshield output
+*.ipch
+*.iobj
+*.pdb
+*.ilk
+*.meta
+*.tlog
+*.manifest
+*.res
+*.pch
+*.exp
+*.idb
+*.rep
+*.xdc
+*.pdb
+*.cache
+*.obj
+*.tlog
+*.lastbuildstate
+*.ipdb
+*.iobj
+
+# NuGet Packages
+*.nuget.props
+*.nuget.targets
+
+# MSBuild
+ProjectImports/
+
+# Visual Studio Coverage Report
+*.coverage
+*.coveragexml
+
+# ReSharper
+*.DotSettings
+*.DotSettings.user
+
+# JustCode
+*.JustCode
+
+# OpenCover
+*.OpenCover.xml
+
+# Azure Functions
+local.settings.json

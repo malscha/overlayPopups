@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "settings": {
+    "defaultOpacity": 0.8,
+    "ignoreMouse": true,
+    "snapToEdges": true,
+    "gridSize": 10
+  },
+  "cards": [
+    {
+      "id": "card1",
+      "type": "text",
+      "x": 100,
+      "y": 100,
+      "width": 200,
+      "height": 50,
+      "opacity": 0.9,
+      "rotation": 0,
+      "zIndex": 1,
+      "font": {
+        "family": "Arial",
+        "size": 14,
+        "weight": "Normal"
+      },
+      "foregroundColor": "#FFFFFF",
+      "outlineColor": "#000000",
+      "text": "Hello, Overlay!"
+    },
+    {
+      "id": "card2",
+      "type": "image",
+      "x": 300,
+      "y": 200,
+      "width": 150,
+      "height": 150,
+      "opacity": 0.7,
+      "rotation": 0,
+      "zIndex": 2,
+      "imagePath": "Assets/sample.png"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene1",
+      "name": "Default Scene",
+      "cards": ["card1", "card2"]
+    }
+  ]
+}
